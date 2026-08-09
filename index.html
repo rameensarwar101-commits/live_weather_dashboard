@@ -1,0 +1,168 @@
+<!-- This tells the browser we are using modern HTML5 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- This sets the text encoding so special characters and emojis show correctly -->
+    <meta charset="UTF-8">
+    <!-- This makes the page resize nicely on phones and tablets -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- This text appears in the browser tab -->
+    <title>SkyCast · Live Weather Dashboard</title>
+    <!-- This links our CSS file so the page gets its colors and layout -->
+    <link rel="stylesheet" href="style.css">
+    <!-- This loads a nice rounded font from Google Fonts for headings -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- This is our LIVE BACKGROUND. It shows a real weather photograph, fixed        -->
+    <!-- behind the whole page, with a soft dark overlay layered on top (added in CSS) -->
+    <!-- so that all the text and cards on top of it stay easy to read.                -->
+    <div class="bg-scene" id="bg-scene" aria-hidden="true"></div>
+
+    <!-- This wraps the whole visible dashboard so we can control max width -->
+    <main class="page">
+
+        <!-- This is the top title area of the whole site -->
+        <header class="site-header">
+            <div class="brand">
+                <!-- The little compass/sun mark next to the name -->
+                <span class="brand-mark">🌤️</span>
+                <div>
+                    <h1>SkyCast</h1>
+                    <p class="brand-sub">know the sky before you step outside</p>
+                </div>
+            </div>
+
+            <!-- This is the search area where a user types a city name -->
+            <form id="search-form" class="search-form" autocomplete="off">
+                <input
+                    type="text"
+                    id="city-input"
+                    class="search-input"
+                    placeholder="Search any city… e.g. Lahore, Tokyo, Paris"
+                    aria-label="Search for a city"
+                />
+                <!-- This button submits the search form when clicked -->
+                <button type="submit" class="search-btn">Search</button>
+                <!-- This button asks the browser for the user's current GPS location -->
+                <button type="button" id="locate-btn" class="locate-btn" title="Use my current location">📍 Near me</button>
+            </form>
+        </header>
+
+        <!-- This box only shows up while data is loading -->
+        <div id="loading" class="status-box loading-box hidden">
+            <div class="spinner" aria-hidden="true"></div>
+            <p>Fetching the latest sky report…</p>
+        </div>
+
+        <!-- This box only shows up if something goes wrong (bad city name, network error, etc) -->
+        <div id="error" class="status-box error-box hidden">
+            <p id="error-message">We could not find that place. Please check the spelling and try again.</p>
+        </div>
+
+        <!-- Everything inside this wrapper only appears once we successfully have weather data -->
+        <div id="dashboard" class="dashboard hidden">
+
+            <!-- HERO CARD: the big current-weather summary, its background color changes with the weather -->
+            <section id="hero-card" class="hero-card">
+                <div class="hero-left">
+                    <p class="hero-location" id="hero-location">City, Country</p>
+                    <p class="hero-date" id="hero-date">Day, Date</p>
+                    <div class="hero-temp-row">
+                        <!-- The big emoji icon representing the current weather condition -->
+                        <span class="hero-icon" id="hero-icon">☀️</span>
+                        <!-- The large current temperature number -->
+                        <span class="hero-temp" id="hero-temp">--°</span>
+                    </div>
+                    <p class="hero-condition" id="hero-condition">Loading condition…</p>
+                    <p class="hero-feels" id="hero-feels">Feels like --°</p>
+                </div>
+
+                <!-- Small strip of quick facts sitting on the right side of the hero card -->
+                <div class="hero-right">
+                    <div class="hero-fact">
+                        <span class="hero-fact-label">High / Low</span>
+                        <span class="hero-fact-value" id="hero-highlow">--° / --°</span>
+                    </div>
+                    <div class="hero-fact">
+                        <span class="hero-fact-label">Humidity</span>
+                        <span class="hero-fact-value" id="hero-humidity-quick">--%</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- GRID OF STAT CARDS: wind, humidity, sunrise/sunset, air quality -->
+            <section class="stats-grid">
+
+                <!-- WIND CARD -->
+                <div class="stat-card wind-card">
+                    <p class="stat-title">🌬️ Wind</p>
+                    <p class="stat-big" id="wind-speed">-- km/h</p>
+                    <!-- This arrow rotates to visually point in the wind's direction -->
+                    <p class="wind-direction-row">
+                        <span class="wind-arrow" id="wind-arrow">↑</span>
+                        <span id="wind-direction-text">Direction: --</span>
+                    </p>
+                </div>
+
+                <!-- HUMIDITY CARD -->
+                <div class="stat-card humidity-card">
+                    <p class="stat-title">💧 Humidity</p>
+                    <p class="stat-big" id="humidity-value">--%</p>
+                    <!-- A little bar that visually fills based on the humidity percentage -->
+                    <div class="bar-track">
+                        <div class="bar-fill" id="humidity-bar"></div>
+                    </div>
+                </div>
+
+                <!-- SUNRISE / SUNSET CARD -->
+                <div class="stat-card sun-card">
+                    <p class="stat-title">🌅 Sun Times</p>
+                    <div class="sun-row">
+                        <div>
+                            <span class="sun-emoji">🌅</span>
+                            <p class="sun-label">Sunrise</p>
+                            <p class="sun-value" id="sunrise-value">--:--</p>
+                        </div>
+                        <div>
+                            <span class="sun-emoji">🌇</span>
+                            <p class="sun-label">Sunset</p>
+                            <p class="sun-value" id="sunset-value">--:--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AIR QUALITY CARD -->
+                <div class="stat-card aqi-card">
+                    <p class="stat-title">🌫️ Air Quality</p>
+                    <!-- This circular badge changes color based on how clean/dirty the air is -->
+                    <div class="aqi-badge" id="aqi-badge">
+                        <span id="aqi-number">--</span>
+                    </div>
+                    <p class="stat-label-small" id="aqi-label">Checking air…</p>
+                </div>
+
+            </section>
+
+            <!-- FORECAST STRIP: horizontally scrollable multi-day forecast -->
+            <section class="forecast-section">
+                <h2 class="section-title">📅 Next Days</h2>
+                <!-- Individual day cards get inserted here by JavaScript -->
+                <div class="forecast-strip" id="forecast-strip"></div>
+            </section>
+
+        </div>
+
+        <!-- Footer credit line -->
+        <footer class="site-footer">
+            <p>Built by Rameen Sarwar</p>
+        </footer>
+
+    </main>
+
+    <!-- This links our JavaScript file, placed at the end so the HTML loads first -->
+    <script src="script1.js"></script>
+</body>
+</html>

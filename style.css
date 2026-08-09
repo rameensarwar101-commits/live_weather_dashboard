@@ -1,0 +1,478 @@
+/* ============================================= */
+/* COLOR PALETTE — stored as variables so every   */
+/* part of the page can reuse the same set of     */
+/* hand-picked colors instead of one plain color  */
+/* ============================================= */
+:root {
+    --midnight: #16233E;      /* deep stormy navy, pulled from the rainy-night slice of the photo */
+    --dusk: #2E6E86;          /* muted teal-navy, the transition tone between rain and clear sky in the photo */
+    --coral: #E0954F;         /* warm sunset gold, pulled from the glowing clouds on the left of the photo */
+    --amber: #F2B368;         /* soft golden amber, the lighter highlight tone in that same sunset cloud */
+    --cyan: #3FA9C9;          /* rain-sky teal, pulled from the blue rainy-sky slice of the photo */
+    --cloud: #F7F9FC;         /* near-white, used for card backgrounds */
+    --ink: #22223B;           /* dark ink color, used for main readable text */
+    --ink-soft: #5A5A72;      /* softer gray-purple, used for secondary text */
+    --good-green: #6BCB77;    /* green, used when air quality is good */
+    --warn-yellow: #FFD93D;   /* yellow, used when air quality is moderate */
+    --danger-red: #FF6363;    /* red, used when air quality is poor */
+}
+
+/* This resets default spacing browsers add, so our layout is predictable */
+* {
+    margin: 0;                 /* removes default outer spacing on every element */
+    padding: 0;                /* removes default inner spacing on every element */
+    box-sizing: border-box;    /* makes width/height include padding and border */
+}
+
+/* This styles the whole page background and default font */
+body {
+    background: var(--midnight);       /* plain fallback color, shown only if the live scene fails to load */
+    font-family: 'Inter', sans-serif;  /* clean readable body font */
+    color: var(--ink);                 /* default dark text color */
+    min-height: 100vh;                 /* page always fills the full screen height */
+    padding-bottom: 40px;              /* breathing room at the very bottom */
+}
+
+/* ============================================= */
+/* LIVE BACKGROUND — a real weather photograph    */
+/* fixed behind the whole page, with a soft dark  */
+/* overlay on top so header/card text stays clear */
+/* to read no matter where it sits on the photo.  */
+/* ============================================= */
+.bg-scene {
+    position: fixed;                 /* keeps the photo pinned even while the page scrolls */
+    top: 0; right: 0; bottom: 0; left: 0; /* stretches it to cover the full screen on all sides */
+    z-index: -2;                     /* sits behind every other element on the page */
+    background-image: url('weather\ background.jpg'); /* the real weather photo supplied by the user */
+    background-size: cover;           /* scales the photo so it always fills the screen with no gaps */
+    background-position: center;      /* keeps the middle of the photo centered on any screen size */
+    background-repeat: no-repeat;     /* stops the photo from tiling/repeating */
+}
+/* This soft navy tint sits above the photo but below the cards, keeping all text readable */
+.bg-scene::after {
+    content: '';                      /* required for a pseudo-element to render */
+    position: absolute;               /* lets it stretch over the whole scene */
+    top: 0; right: 0; bottom: 0; left: 0; /* covers every edge of the scene */
+    background: linear-gradient(180deg, rgba(22,35,62,0.55) 0%, rgba(22,35,62,0.2) 30%, rgba(22,35,62,0.15) 70%, rgba(22,35,62,0.5) 100%); /* darker at top/bottom, clearer in the middle, tinted to match the photo's own navy tone */
+    pointer-events: none;             /* lets clicks pass straight through it */
+}
+
+/* ============================================= */
+/* TOP TICKER — a thin scrolling strip of emojis  */
+/* purely for visual flavor at the top of screen  */
+/* ============================================= */
+.sky-ticker {
+    overflow: hidden;               /* hides the parts of the track outside the view */
+    white-space: nowrap;            /* keeps all emojis on a single line */
+    background: rgba(0, 0, 0, 0.15);/* faint dark strip so it stands apart from the sky */
+    padding: 6px 0;                 /* small vertical padding for the strip */
+}
+.sky-ticker-track {
+    display: inline-block;          /* lets the text move as one block */
+    font-size: 18px;                /* size of the little emoji icons */
+    animation: scroll-ticker 30s linear infinite; /* runs the scrolling animation forever */
+}
+/* This defines the actual left-moving animation used above */
+@keyframes scroll-ticker {
+    from { transform: translateX(0); }        /* starts at normal position */
+    to   { transform: translateX(-50%); }      /* slides left by half its width, then loops */
+}
+
+/* This centers the whole dashboard and limits how wide it gets on big screens */
+.page {
+    max-width: 1000px;   /* keeps content readable on large monitors */
+    margin: 0 auto;      /* centers the page horizontally */
+    padding: 24px 20px;  /* space around the edges */
+    position: relative;  /* required so the page sits above the fixed background scene */
+    z-index: 1;           /* lifts all real content above the bg-scene (-2) and its vignette */
+}
+
+/* ============================================= */
+/* HEADER: brand name + search bar                */
+/* ============================================= */
+.site-header {
+    display: flex;                 /* stacks the brand row and the search row on top of each other */
+    flex-direction: column;         /* brand sits on its own row, search sits on its own row below it */
+    align-items: stretch;            /* lets the search row use the full header width so it can truly center */
+    gap: 18px;                        /* space between the brand row and the search row */
+    margin-bottom: 28px;           /* space below the header */
+}
+.brand {
+    display: flex;        /* places the icon and text side by side */
+    align-items: center;  /* vertically centers icon with text */
+    gap: 12px;             /* space between icon and text */
+}
+.brand-mark {
+    font-size: 40px;               /* big sun/cloud emoji size */
+    filter: drop-shadow(0 4px 10px rgba(255, 179, 71, 0.5)); /* soft amber glow behind icon */
+}
+.brand h1 {
+    font-family: 'Fraunces', serif; /* elegant serif font just for the big title */
+    font-size: 28px;                /* large title size */
+    color: var(--cloud);            /* light color so it pops on the dark background */
+    letter-spacing: 0.5px;          /* slight spacing for a polished look */
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4); /* keeps the title readable even on bright sky scenes like snow */
+}
+.brand-sub {
+    font-size: 13px;               /* small subtitle text */
+    color: rgba(247, 249, 252, 0.7); /* soft translucent white */
+    font-style: italic;             /* italic for a tagline feel */
+}
+
+/* The search form holds the text box and two buttons. It now sits centered   */
+/* on its own row below the brand, with the input on top and both buttons     */
+/* wrapping onto their own row directly underneath it (see the input's width  */
+/* rule below, which is the trick that forces that line break).               */
+.search-form {
+    display: flex;             /* lines up the input and buttons, wrapping as needed */
+    flex-wrap: wrap;            /* allows the buttons to drop onto their own line under the input */
+    justify-content: center;     /* centers everything horizontally within the search block */
+    gap: 10px;                    /* space between the input and each button */
+    max-width: 640px;              /* controls how long the centered search block is allowed to grow */
+    width: 100%;                    /* lets it fill up to that max-width on wider screens */
+    margin: 0 auto;                  /* centers the whole search block in the middle of the page */
+}
+.search-input {
+    padding: 12px 16px;              /* comfortable click/tap area */
+    border-radius: 14px;             /* rounded corners for a friendly feel */
+    border: 2px solid transparent;   /* invisible border that lights up on focus */
+    outline: none;                    /* removes default browser outline */
+    font-size: 15px;                  /* readable input text size */
+    flex: 1 1 100%;                    /* forces the input to take the FULL row on its own... */
+    width: 100%;                        /* ...which is what pushes both buttons onto the row below it */
+    background: rgba(247, 249, 252, 0.95); /* near-white input background */
+    color: var(--ink);                /* dark text inside the input */
+}
+.search-input:focus {
+    border-color: var(--amber); /* golden ring appears when the user clicks into the box */
+}
+.search-btn, .locate-btn {
+    padding: 12px 18px;      /* comfortable button size */
+    border: none;             /* removes default button border */
+    border-radius: 14px;      /* rounded corners matching the input */
+    font-weight: 600;         /* bold-ish button label */
+    font-size: 14px;          /* readable button text */
+    cursor: pointer;          /* shows a pointer hand on hover */
+    flex: 0 1 auto;             /* buttons only take as much width as their label needs */
+    transition: transform 0.15s ease, box-shadow 0.15s ease; /* smooth little hover bounce */
+}
+.search-btn {
+    background: var(--coral);  /* warm coral button for the main search action */
+    color: white;               /* white text for contrast on coral */
+}
+.locate-btn {
+    background: var(--cyan);   /* cyan button for the "use my location" action */
+    color: var(--midnight);     /* dark text for contrast on light cyan */
+}
+.search-btn:hover, .locate-btn:hover {
+    transform: translateY(-2px);                 /* button lifts slightly on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);   /* soft shadow appears under lifted button */
+}
+
+/* ============================================= */
+/* LOADING & ERROR STATUS BOXES                   */
+/* ============================================= */
+.status-box {
+    background: rgba(247, 249, 252, 0.82); /* frosted-glass background so the live sky shows through slightly */
+    backdrop-filter: blur(14px);             /* blurs whatever sky color is behind it, for a true glass look */
+    border: 1px solid rgba(255, 255, 255, 0.4); /* faint glass edge highlight */
+    border-radius: 20px;                    /* rounded card corners */
+    padding: 40px 20px;                     /* generous inner spacing */
+    text-align: center;                     /* centers the message text */
+    color: var(--ink);                      /* dark readable text */
+    font-size: 16px;                        /* comfortable reading size */
+}
+.hidden {
+    display: none; /* this single rule is how we show/hide sections from JavaScript */
+}
+/* The little spinning circle shown while data is loading */
+.spinner {
+    width: 42px;                         /* circle width */
+    height: 42px;                        /* circle height */
+    margin: 0 auto 14px;                 /* centers the circle and adds space below it */
+    border: 5px solid rgba(107, 78, 158, 0.2); /* faint purple base ring */
+    border-top-color: var(--coral);      /* coral segment that creates the spin illusion */
+    border-radius: 50%;                  /* makes the square into a circle */
+    animation: spin 0.9s linear infinite; /* runs the spin animation forever */
+}
+@keyframes spin {
+    to { transform: rotate(360deg); } /* rotates one full turn */
+}
+.error-box {
+    border: 2px dashed var(--coral); /* dashed coral outline to signal a problem */
+}
+.error-emoji {
+    font-size: 36px;      /* large emoji for visibility */
+    margin-bottom: 10px;   /* space below the emoji */
+}
+
+/* ============================================= */
+/* HERO CARD — the big current weather summary    */
+/* ============================================= */
+.hero-card {
+    background: linear-gradient(135deg, var(--coral) 0%, var(--amber) 100%); /* warm sunset gradient by default */
+    border-radius: 26px;               /* large rounded corners for a soft card feel */
+    padding: 30px;                     /* generous inner spacing */
+    display: flex;                     /* places left info and right facts side by side */
+    justify-content: space-between;    /* pushes the two halves apart */
+    align-items: center;               /* vertically centers both halves */
+    flex-wrap: wrap;                   /* wraps nicely on small screens */
+    gap: 20px;                         /* space between halves when wrapped */
+    color: white;                      /* white text reads well on the warm gradient */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); /* deep shadow so the card feels lifted */
+    margin-bottom: 22px;               /* space below the hero card */
+    transition: background 0.6s ease;  /* smooth color change when weather condition updates */
+}
+.hero-location {
+    font-size: 22px;      /* city name size */
+    font-weight: 700;      /* bold city name */
+    font-family: 'Fraunces', serif; /* elegant serif to match the brand title */
+}
+.hero-date {
+    font-size: 13px;                  /* small date text */
+    opacity: 0.9;                      /* slightly faded so it doesn't compete with city name */
+    margin-bottom: 14px;                /* space below the date */
+}
+.hero-temp-row {
+    display: flex;        /* places icon and number side by side */
+    align-items: center;  /* vertically centers icon with number */
+    gap: 10px;              /* small space between icon and number */
+}
+.hero-icon {
+    font-size: 54px; /* large weather emoji */
+}
+.hero-temp {
+    font-family: 'Space Mono', monospace; /* monospace font gives numbers a "readout" feel */
+    font-size: 60px;                       /* huge temperature number */
+    font-weight: 700;                       /* bold number */
+}
+.hero-condition {
+    font-size: 17px;      /* condition text size, e.g. "Partly Cloudy" */
+    margin-top: 4px;       /* small space above */
+    font-weight: 600;      /* semi-bold for emphasis */
+}
+.hero-feels {
+    font-size: 13px;  /* small "feels like" text */
+    opacity: 0.85;      /* slightly faded, it's secondary info */
+    margin-top: 2px;    /* tiny space above */
+}
+.hero-right {
+    display: flex;      /* stacks the two quick-fact boxes */
+    gap: 14px;            /* space between the two boxes */
+}
+.hero-fact {
+    background: rgba(255, 255, 255, 0.2); /* translucent white pill background */
+    border-radius: 14px;                    /* rounded pill corners */
+    padding: 14px 18px;                     /* inner spacing */
+    text-align: center;                     /* centers the label and value */
+    min-width: 100px;                       /* keeps both boxes a consistent width */
+}
+.hero-fact-label {
+    display: block;      /* forces label onto its own line above the value */
+    font-size: 11px;       /* small uppercase-style label */
+    text-transform: uppercase; /* makes the label shout a little, like a real gauge */
+    opacity: 0.85;          /* slightly faded label */
+    margin-bottom: 4px;      /* space below label */
+}
+.hero-fact-value {
+    font-size: 18px;   /* value text size */
+    font-weight: 700;   /* bold value */
+}
+
+/* ============================================= */
+/* STATS GRID — wind, humidity, sun, air quality  */
+/* ============================================= */
+.stats-grid {
+    display: grid;                                  /* uses CSS grid to arrange the four cards */
+    grid-template-columns: repeat(4, 1fr);           /* four equal columns on wide screens */
+    gap: 16px;                                       /* space between each stat card */
+    margin-bottom: 26px;                             /* space below the whole grid */
+}
+.stat-card {
+    background: rgba(247, 249, 252, 0.82); /* frosted-glass card so the live sky color tints through */
+    backdrop-filter: blur(14px);              /* blurs the sky behind the card for a glassy effect */
+    border: 1px solid rgba(255, 255, 255, 0.45); /* soft glass edge highlight */
+    border-radius: 20px;         /* rounded card corners */
+    padding: 20px;                /* inner spacing */
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18); /* soft shadow so cards feel lifted */
+    transition: transform 0.2s ease, background 1.2s ease; /* smooth hover lift + gentle recolor with the sky */
+}
+.stat-card:hover {
+    transform: translateY(-4px); /* small lift on hover for interactivity */
+}
+.stat-title {
+    font-size: 13px;            /* small card heading */
+    font-weight: 700;            /* bold heading */
+    color: var(--ink-soft);      /* muted purple-gray heading color */
+    margin-bottom: 10px;          /* space below heading */
+    text-transform: uppercase;    /* uppercase heading for a "gauge label" feel */
+    letter-spacing: 0.5px;        /* slight spacing for readability */
+}
+.stat-big {
+    font-family: 'Space Mono', monospace; /* monospace "readout" style for numbers */
+    font-size: 26px;                       /* large number size */
+    font-weight: 700;                       /* bold number */
+    color: var(--ink);                       /* dark readable color */
+}
+
+/* Wind card specific styling */
+.wind-card { border-top: 5px solid var(--cyan); } /* colored top edge to identify this card at a glance */
+.wind-direction-row {
+    display: flex;        /* places arrow and text side by side */
+    align-items: center;  /* vertically centers arrow with text */
+    gap: 8px;               /* small space between arrow and text */
+    margin-top: 8px;        /* space above the row */
+    font-size: 13px;        /* small direction text */
+    color: var(--ink-soft); /* muted color for secondary info */
+}
+.wind-arrow {
+    display: inline-block;               /* required so we can rotate it */
+    font-size: 20px;                      /* arrow size */
+    color: var(--cyan);                    /* cyan arrow to match the wind card theme */
+    transition: transform 0.4s ease;       /* smooth rotation when direction updates */
+}
+
+/* Humidity card specific styling */
+.humidity-card { border-top: 5px solid var(--dusk); } /* colored top edge for humidity card */
+.bar-track {
+    width: 100%;                     /* bar background spans the full card width */
+    height: 10px;                     /* thin bar track */
+    background: rgba(107, 78, 158, 0.15); /* faint purple track background */
+    border-radius: 10px;               /* fully rounded track ends */
+    margin-top: 10px;                   /* space above the bar */
+    overflow: hidden;                   /* keeps the fill inside the rounded track */
+}
+.bar-fill {
+    height: 100%;                 /* fill matches the track height */
+    width: 0%;                     /* starts empty, JavaScript sets the real width */
+    background: var(--dusk);       /* purple fill color matching the card accent */
+    border-radius: 10px;            /* rounded fill edges */
+    transition: width 0.6s ease;    /* smoothly animates when humidity updates */
+}
+
+/* Sun times card specific styling */
+.sun-card { border-top: 5px solid var(--amber); } /* colored top edge for sunrise/sunset card */
+.sun-row {
+    display: flex;                 /* places sunrise and sunset side by side */
+    justify-content: space-between;/* spreads them across the card */
+    text-align: center;             /* centers each mini column */
+    margin-top: 6px;                 /* small space above */
+}
+.sun-emoji {
+    font-size: 22px; /* sunrise/sunset emoji size */
+}
+.sun-label {
+    font-size: 11px;             /* small label under the emoji */
+    color: var(--ink-soft);       /* muted secondary color */
+    margin: 2px 0;                 /* tiny vertical spacing */
+}
+.sun-value {
+    font-family: 'Space Mono', monospace; /* monospace time readout */
+    font-weight: 700;                      /* bold time text */
+    font-size: 15px;                        /* readable time size */
+}
+
+/* Air quality card specific styling */
+.aqi-card { border-top: 5px solid var(--danger-red); text-align: center; } /* red top edge, centered content */
+.aqi-badge {
+    width: 64px;                    /* circular badge width */
+    height: 64px;                    /* circular badge height */
+    border-radius: 50%;               /* makes it a perfect circle */
+    display: flex;                     /* centers the number inside the circle */
+    align-items: center;               /* vertical centering */
+    justify-content: center;           /* horizontal centering */
+    margin: 6px auto 10px;              /* centers badge horizontally with spacing */
+    font-family: 'Space Mono', monospace; /* monospace number style */
+    font-size: 20px;                       /* AQI number size */
+    font-weight: 700;                       /* bold number */
+    color: white;                            /* white number for contrast */
+    background: var(--good-green);            /* default green, JavaScript changes this by condition */
+    transition: background 0.4s ease;         /* smooth color change when AQI updates */
+}
+.stat-label-small {
+    font-size: 12px;         /* small descriptive label like "Good" or "Poor" */
+    color: var(--ink-soft);   /* muted secondary color */
+}
+
+/* ============================================= */
+/* FORECAST STRIP — horizontally scrolling days   */
+/* ============================================= */
+.section-title {
+    color: var(--cloud);       /* light heading color to stand out on dark page background */
+    font-family: 'Fraunces', serif; /* elegant serif matching the brand */
+    font-size: 20px;                 /* heading size */
+    margin-bottom: 12px;              /* space below heading */
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); /* keeps the heading readable on bright sky scenes */
+}
+.forecast-strip {
+    display: flex;             /* lines up all day cards in a row */
+    gap: 14px;                   /* space between each day card */
+    overflow-x: auto;             /* allows horizontal scrolling if it overflows */
+    padding-bottom: 8px;           /* space for the scrollbar area */
+}
+/* Each individual forecast day card gets this class added by JavaScript */
+.forecast-day {
+    background: rgba(247, 249, 252, 0.82); /* frosted-glass card matching the other stat cards */
+    backdrop-filter: blur(14px);              /* blurs the sky behind it for the same glassy look */
+    border: 1px solid rgba(255, 255, 255, 0.45); /* soft glass edge highlight */
+    border-radius: 18px;         /* rounded corners */
+    padding: 16px;                 /* inner spacing */
+    min-width: 110px;              /* keeps every day card a consistent width */
+    text-align: center;            /* centers all the text and icons */
+    flex-shrink: 0;                /* prevents cards from squishing when scrolling */
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15); /* soft lifted shadow */
+}
+.forecast-day-name {
+    font-weight: 700;       /* bold day name, e.g. "Mon" */
+    font-size: 14px;         /* readable size */
+    margin-bottom: 6px;       /* space below day name */
+    color: var(--ink);         /* dark readable text */
+}
+.forecast-day-icon {
+    font-size: 30px;    /* weather emoji size for the day */
+    margin-bottom: 6px;  /* space below icon */
+}
+.forecast-day-temps {
+    font-family: 'Space Mono', monospace; /* monospace readout for high/low */
+    font-size: 13px;                       /* small temperature text */
+    color: var(--ink-soft);                 /* muted secondary color */
+}
+.forecast-day-temps .high {
+    color: var(--coral);   /* warm coral color highlights the day's high temperature */
+    font-weight: 700;       /* bold high temperature */
+}
+
+/* ============================================= */
+/* FOOTER                                         */
+/* ============================================= */
+.site-footer {
+    text-align: center;                       /* centers the footer text */
+    color: rgba(247, 249, 252, 0.6);           /* faint light text on the dark background */
+    font-size: 12px;                            /* small footer text */
+    margin-top: 36px;                            /* space above the footer */
+}
+
+/* ============================================= */
+/* RESPONSIVE RULES — adjust layout for smaller   */
+/* screens like tablets and phones                */
+/* ============================================= */
+@media (max-width: 800px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr); /* two columns instead of four on tablets */
+    }
+}
+@media (max-width: 500px) {
+    .stats-grid {
+        grid-template-columns: 1fr; /* single column stack on narrow phone screens */
+    }
+    .hero-card {
+        flex-direction: column;  /* stacks hero left/right sections vertically */
+        align-items: flex-start; /* left-aligns everything when stacked */
+    }
+    .hero-temp {
+        font-size: 46px; /* slightly smaller giant number on small screens */
+    }
+    .search-btn, .locate-btn {
+        flex: 1 1 auto; /* lets both buttons stretch evenly to share the row width on phones */
+    }
+}
